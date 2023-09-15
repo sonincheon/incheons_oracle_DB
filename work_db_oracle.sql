@@ -224,7 +224,7 @@ AND MGR IS NOT NULL
 AND JOB IN ('CLERK','MANAGER') 
 AND ENAME NOT LIKE '_L%' ;
 
-<<<<<<< HEAD
+
 ---------------------------------------------------------------
 -- 문자 함수 : 문자 데이터를 가공하는것
 SELECT ENAME, UPPER(ENAME), LOWER(ENAME), INITCAP(ENAME)
@@ -249,7 +249,7 @@ SELECT JOB,
     SUBSTR(JOB,-LENGTH(JOB),2), -- SALESMAN, -8이면 S위치에 길이가 2만큼 출력
     SUBSTR(JOB, -3)
 FROM EMP;
-=======
+
 -- 1. **EMP테이블에서 COMM 의 값이 NULL이 아닌 정보 조회**
 SELECT *
 FROM EMP
@@ -338,7 +338,6 @@ FROM DUAL;
 --POER : 정수 A를 정수 B만큼 제곱하는 함수 (3 ,4)
 SELECT POWER(3,4)
 FROM DUAL;
->>>>>>> e27163cd0845e0ada0f61cb0de3cd42cbd57f499
 
 -- INSTR : 문자의 포함여부 (인덱스로 반환 )
 SELECT INSTR( ' HELLO, ORACLE! ' ,'L') as INSTR_1,
@@ -511,5 +510,152 @@ WHERE ENAME = 'FORD';
 
 SELECT TO_CHAR(SYSDATE, 'YYYY/MM/DD HH24:MI:MM') AS "현재"
 FROM DUAL;
+
+SELECT SYSDATE,
+    TO_CHAR(SYSDATE, 'CC') AS 세기,
+    TO_CHAR(SYSDATE, 'YY') AS 연도,
+    TO_CHAR(SYSDATE, 'YYYY/MM/DD PM HH:MI:SS ') AS "년/월/일 시:분:초",
+    TO_CHAR(SYSDATE, 'Q') AS 쿼터,
+    TO_CHAR(SYSDATE, 'DD') AS 일,
+    TO_CHAR(SYSDATE, 'DDD') AS 경과일,
+    TO_CHAR(SYSDATE, 'HH') AS "12시간제",
+    TO_CHAR(SYSDATE, 'HH12') AS "12시간제",
+    TO_CHAR(SYSDATE, 'HH24') AS "24시간제",
+    TO_CHAR(SYSDATE, 'W') AS 몇주차
+FROM DUAL;
+
+SELECT SYSDATE,
+     TO_CHAR(SYSDATE, 'MM') AS MM,
+     TO_CHAR(SYSDATE, 'MON', 'NLS_DATE_LANGUAGE = KOREAN' ) AS MON_KOR,
+     TO_CHAR(SYSDATE, 'MON', 'NLS_DATE_LANGUAGE = JAPANESE') AS MON_JPN,
+     TO_CHAR(SYSDATE, 'MON', 'NLS_DATE_LANGUAGE = ENGLISH' ) AS MON_ENG,
+     TO_CHAR(SYSDATE, 'MONTH', 'NLS_DATE_LANGUAGE = KOREAN' ) AS MONTH_KOR,
+     TO_CHAR(SYSDATE, 'MONTH', 'NLS_DATE_LANGUAGE = JAPANESE') AS MONTH_JPN,
+     TO_CHAR(SYSDATE, 'MONTH', 'NLS_DATE_LANGUAGE = ENGLISH' ) AS MONTH_ENG
+FROM DUAL;
+
+
+SELECT SYSDATE,
+     TO_CHAR(SYSDATE, 'HH24:MI:SS') AS HH24MISS,
+     TO_CHAR(SYSDATE, 'HH12:MI:SS AM') AS HHMISS_AM,
+     TO_CHAR(SYSDATE, 'HH:MI:SS P.M.') AS HHMISS_PM
+FROM DUAL;
+
+SELECT SAL,
+    TO_CHAR(SAL,'$999,9999') AS sal_$,
+    TO_CHAR(SAL,'L999,9999') AS sal_L,
+    TO_CHAR(SAL,'999,9999.00') AS sal_1,
+    TO_CHAR(SAL,'000,9999999.00') AS sal_2,
+    TO_CHAR(SAL,'0009999999.99') AS sal_3,
+    TO_CHAR(SAL,'999,999.00') AS sal_4
+FROM EMP;
+
+--TO_NUMBER() : NUMBER타입으로 형변환 
+SELECT TO_NUMBER( '1300') - '1200'
+FROM DUAL;
+
+-- TO_DATE() : 문자열로 명시된 날짜를 날짜 타입으로 형변환
+SELECT TO_DATE('22/08/20', 'YY/MM/DD') 
+FROM dual;
+
+-- 1981년 6월 1일 이후에 입사한 사원 정보 출력하기
+SELECT *
+FROM EMP
+WHERE HIREDATE > TO_DATE('1981/06/01', 'YY/MM/DD');
+
+-- NULL 처리 함수 : NULL은 값이 없음 , 즉 할당되지 않음을 의미 
+-- NULL은 0이나 공백과는 다른 의미, 연산불가
+-- NVL(NULLD 인지를 검사할 열, 앞의 열  데이터가 NULL인 경우 반환할 데이터 )
+SELECT EMPNO, ENAME, SAL, COMM,SAL+COMM,
+    NVL(COMM, 0), SAL + NVL(COMM,0)
+FROM EMP;
+
+--NVL2 () : NULL이 아닌경우와 NULL인 경우 모두에 대해서 값을 출력할수있음
+SELECT EMPNO, ENAME, COMM ,
+    NVL2(COMM,'0','X'),
+    NVL2(COMM,SAL*12+COMM,SAL*12) AS 연봉 
+FROM EMP;
+
+--NULLIF() : 두 값이 동일하면 NULL 반환 , 아니면 첫 번쨰 값 반환
+SELECT NULLIF(10,10), NULLIF('A','B')
+FROM DUAL;
+
+-- DECODE : 주어진 데이터 값이 조건 값과  일치하는 값 출력
+-- 일치하는 값이 없으면 기본값 출력
+SELECT EMPNO, ENAME, JOB, SAL,
+    DECODE ( JOB,
+        'MANAGER',SAL*1.1,
+        'SALESMAN',SAL*1.05,
+        'ANALYST', SAL,
+                SAL*1.03) AS D연봉인상 
+FROM EMP;
+
+-- CASE 문 
+SELECT EMPNO, ENAME, JOB ,SAL,
+    CASE JOB
+        WHEN 'MAGER' THEN SAL * 1.1
+        WHEN 'SALESMAN' THEN SAL*1.05
+        WHEN'ANALYST' THEN SAL
+        ELSE SAL* 1.03
+    END AS 연봉인상
+FROM EMP;
+
+-- 열 값에 따라서 출력 값이 달라지는 CASE DELETE 
+SELECT EMPNO, ENAME, COMM,
+    CASE
+        WHEN COMM IS NULL THEN '해당 사항 없음 '
+        WHEN COMM = 0 THEN '수당없음'
+        WHEN COMM > 0 THEN '수당 : ' || COMM
+    END AS "성과급기준"
+FROM EMP;
+
+-------------------------------------------------------------------
+SELECT EMPNO,
+    RPAD(SUBSTR(EMPNO,1,2),4,'*') AS MASKING_EMPNO,
+    ENAME,
+    RPAD(SUBSTR(ENAME,1,1),LENGTH(ENAME),'*')AS MASKING_ENAME
+FROM EMP;
+
+--
+SELECT EMPNO, ENAME,SAL,
+    TRUNC(SAL/21.5,2) AS일급,
+    ROUND(SAL/21.5/8,1) AS 시급
+FROM EMP;
+
+-- 3번
+-- NEXT_DAY(기준일자, 찾을 요일) : 기준일자 다음에 오는 날짜를 구하는함수 
+SELECT EMPNO, ENAME, HIREDATE,
+    TO_CHAR(NEXT_DAY(ADD_MONTHS ( HIREDATE ,3 ), 'MON'), 'YYYY/MM/DD') AS "정직원 진급",
+    NVL(TO_CHAR(COMM), 'N/A') AS COMM 
+FROM EMP;
+
+
+-- 4번
+SELECT EMPNO, ENAME, MGR,
+    CASE
+        WHEN MGR IS NULL THEN '0000'
+        WHEN SUBSTR(MGR,1,2)='78' THEN '8888'
+        WHEN SUBSTR(MGR,1,2)='77' THEN '7777'
+        WHEN SUBSTR(MGR,1,2)='76' THEN '6666'
+        WHEN SUBSTR(MGR,1,2)='75' THEN '5555'
+        ELSE TO_CHAR(MGR /*NCHAR NCHAR*/)
+    END AS CHG_MGR
+FROM EMP;
+
+-- 다중행 함수 : 어러 행에 대해 함수가 정용되어 하나의 결과를 나타내는 함수( 집계 함수)
+-- 여러 행이 입력되어 결과가 하나의 행으로 출력
+SELECT SUM(SAL)
+FROM EMP;
+
+SELECT JOB,SUM(SAL)
+FROM EMP
+GROUP BY JOB;
+
+SELECT DEPTNO, SUM(SAL),COUNT(*),ROUND(AVG(SAL),2),MAX(SAL),MIN(SAL)
+FROM EMP
+GROUP BY DEPTNO;
+-- GROUP BY : 그룹으로 묶을떄 
+
+
 
 
