@@ -224,21 +224,180 @@ AND MGR IS NOT NULL
 AND JOB IN ('CLERK','MANAGER') 
 AND ENAME NOT LIKE '_L%' ;
 
+---------------------------------------------------------------
+-- 문자 함수 : 문자 데이터를 가공하는것
+SELECT ENAME, UPPER(ENAME), LOWER(ENAME), INITCAP(ENAME)
+FROM EMP;
 
+SELECT *
+FROM EMP
+WHERE UPPER(ENAME) = UPPER('JAMES');
 
+-- LENGTH 함수 : 문자열 길이를 반환
+-- LENGTHB : 문자열의 바이트  수 반환
+SELECT LENGTH('한글'), LENGTHB('한글')
+FROM DUAL;
 
+--SUBSTR /SUBSTRB : 문자열 자르기  (행 , 시작위치, 자르기순)
+-- 데이스베이스 시작위치는 0이 아님, 3번째 매개변수를 생략하면 끝까지 
+SELECT JOB, SUBSTR(JOB, 1, 2) , SUBSTR(JOB,3,2),SUBSTR(JOB, 5)
+FROM EMP;
 
+SELECT JOB,
+    SUBSTR(JOB,-LENGTH(JOB)), -- 음수는 뒤에서부터, 길이에 대한 음수값으로 역순
+    SUBSTR(JOB,-LENGTH(JOB),2), -- SALESMAN, -8이면 S위치에 길이가 2만큼 출력
+    SUBSTR(JOB, -3)
+FROM EMP;
 
+-- INSTR : 문자의 포함여부 (인덱스로 반환 )
+SELECT INSTR( ' HELLO, ORACLE! ' ,'L') as INSTR_1,
+    INSTR( ' HELLO, ORACLE! ' ,'L', 5) as INSTR_2,
+    INSTR( ' HELLO, ORACLE! ' ,'L', 2 , 2) as INSTR_3 --3번쨰 인자는 시작위치, 4번쨰 인자는 몇번쨰 인지
+FROM DUAL;
 
+--특정 문자가 포함된 행찾기
+SELECT *
+FROM EMP
+WHERE INSTR(ENAME,'S') > 0;
 
+SELECT * 
+FROM EMP
+WHERE ENAME LIKE '%S%'
 
+-- REPLACE : 특정 문자열 데이터에 포함된 문자를 다른문자로 대체 IS
+-- 대체할 문자를 넣지 않으면 해당 문자 삭제 IS
+SELECT '010-1234-5678' AS REPLACE_BEFORE,
+    REPLACE ('010-1234-5678' , '-',  '  ') AS REPLACE_1,
+    REPLACE ('010-1234-5678','-' ) AS REPLACE_2
+FROM DUAL; 
 
+-- LPAD / RPAD : 기준 공간의 칸 수를 특정 문자로 채우는 형태 
+SELECT LPAD('ORACLE', 10, '+')
+FROM DUAL;
 
+SELECT 'ORACLE',
+    LPAD('ORACLE',10,'#') AS LPAD_1,
+    LPAD('ORACLE',10,'*') AS RPAD_1,
+    LPAD('ORACLE',10) AS LPAD_2,
+    LPAD('ORACLE',10) AS RPAD_2
+FROM DUAL;
 
+-- 개인 정보 뒷자리 * 표시 
+SELECT
+    RPAD('971225 -', 14, '*') AS RPAD_JMNO,
+    RPAD('010-1234-',13, '*') AS RPAD_PHONE
+FROM DUAL;
 
+-- 두 문자열을 합치는 CONCAT 함수
+SELECT CONCAT(EMPNO, ENAME),
+    CONCAT(EMPNO, CONCAT( '   :    ',ENAME))
+FROM EMP
+WHERE ENAME = 'JAMES';
 
+-- TRIM/ LTRIM / RTRIM : 문자열 내에서 특정 문자열을 지우기 위해 사용 
+-- 삭제할 문자를 지정하지 않으면 공백 제거 ( 공백 제거용으로 사용 )
+SELECT '[' || TRIM('            _Oracle_         ') || ']' AS TRIM,
+ '[' || LTRIM('          _Oracle_ ') || ']' AS LTRIM,
+ '[' || LTRIM('<_Oracle_>             ', '<_') || ']' AS LTRIM_2,
+ '[' || RTRIM(' _Oracle_         ') || ']' AS RTRIM,
+ '[' || RTRIM('<_Oracle_>            ', '_>') || ']' AS RTRIM_2
+ FROM DUAL;
 
+ SELECT TRIM('                  호오오올리 쉣                ') AS HOLI
+FROM DUAL;
 
+-- 날짜 데이터를 다루는 날짜함수
+-- SYSDATE :  운영 체제의 현재 날짜와 시간 정보를 가져옴
+SELECT SYSDATE AS 현재시간
+FROM DUAL;
 
+SELECT SYSDATE AS 오늘,
+    SYSDATE -1 AS 어제,
+    SYSDATE +1 AS내일
+FROM DUAL;
 
+-- 몇 개월 이후 날짜 구하는 ADD_MONTH 함수
+-- 특정 날짜에 지정한 개월 수 이후의 날짜 데이터를 반환하는 함수
+-- ADD_MONTH (날짜 , 개월 , 일)  이후를 반환 
+SELECT SYSDATE, 
+    ADD_MONTHS(SYSDATE, 3) 
+FROM DUAL;
 
+-- EMP Table에서 입사 10주년이 되는 사원들 데이터 출력 DELETE
+SELECT EMPNO, ENAME, HIREDATE,
+    ADD_MONTHS(HIREDATE, 120) AS 입사10주년 -- 10년 더하기
+FROM EMP;
+
+--SYSDATE와 ADD_MONTH 함수를 사용하여 현재 날짜와 6개월 후 날짜 출력
+SELECT SYSDATE AS 오늘,
+    ADD_MONTHS(SYSDATE ,6) 
+FROM DUAL;
+
+--두 날짜 간의 개월 수 차이를 구하는 MONTHS_BETWEEN 함수
+SELECT EMPNO, ENAME,HIREDATE,SYSDATE,
+    MONTHS_BETWEEN(HIREDATE ,SYSDATE) AS MONTHS1,
+    MONTHS_BETWEEN(SYSDATE, HIREDATE) AS MONTHS2,
+    TRUNC(MONTHS_BETWEEN(SYSDATE,HIREDATE)) AS MONTHS3
+FROM EMP;
+
+-- 날짜 정보 추출 함수
+-- EXTRACT 함수는 날짜 유형의 데이터로 부터 날짜 정보를 분리하여 새로운 정보로 출력
+SELECT EXTRACT(YEAR FROM DATE '2023 - 09 - 15') AS 년도추출
+FROM DUAL;
+
+SELECT *
+FROM EMP
+WHERE EXTRACT(MONTH FROM HIREDATE) = 12; 
+
+-- 9. **오늘 날짜에 대한 정보 조회**
+SELECT SYSDATE
+FROM DUAL;
+
+-- 10. **EMP테이블에서 사번, 사원명, 급여 조회  (단, 급여는 100단위까지의 값만 출력 처리하고 급여 기준 내림차순 정렬)**
+SELECT EMPNO,ENAME,
+    ROUND(SAL,-2) AS 급여
+FROM EMP;
+
+-- 11. **EMP테이블에서 사원번호가 홀수인 사원들을 조회**
+SELECT EMPNO,ENAME
+FROM EMP
+WHERE MOD (EMPNO,2) !=0 ;
+
+-- 12. **EMP테이블에서 사원명, 입사일 조회 (단, 입사일은 년도와 월을 분리 추출해서 출력)**
+SELECT ENAME,
+EXTRACT(YEAR FROM HIREDATE) AS 입사년도,
+EXTRACT(MONTH FROM HIREDATE) AS 입사월
+FROM EMP;
+
+-- 13. **EMP테이블에서 9월에 입사한 직원의 정보 조회**
+SELECT *
+FROM EMP
+WHERE EXTRACT(MONTH FROM HIREDATE)=9;
+
+-- 14. **EMP테이블에서 81년도에 입사한 직원 조회**
+SELECT *
+FROM EMP
+WHERE EXTRACT(YEAR FROM HIREDATE)=1981;
+
+-- 15. **EMP테이블에서 이름이 'E'로 끝나는 직원 조회**
+SELECT *
+FROM EMP
+WHERE ENAME LIKE '%E';
+
+-- 16. **EMP테이블에서 이름의 세 번째 글자가 'R'인 직원의 정보 조회**
+-- - **LIKE 사용**
+SELECT *
+FROM EMP
+WHERE ENAME LIKE '__R%';
+-- 1. **EMP테이블에서 사번, 사원명, 입사일, 입사일로부터 40년 되는 날짜 조회**
+SELECT EMPNO,ENAME,
+ADD_MONTHS(HIREDATE,480) 
+FROM EMP;
+-- 2. **EMP테이블에서 입사일로부터 38년 이상 근무한 직원의 정보 조회**
+SELECT *
+FROM EMP
+WHERE TRUNC(MONTHS_BETWEEN(SYSDATE,HIREDATE))>=456;
+
+-- 3. **오늘 날짜에서 년도만 추출**
+SELECT EXTRACT(YEAR FROM SYSDATE)
+FROM DUAL;
