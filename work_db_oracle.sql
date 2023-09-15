@@ -656,6 +656,34 @@ FROM EMP
 GROUP BY DEPTNO;
 -- GROUP BY : 그룹으로 묶을떄 
 
+-------------------------------------------------------
+--------------연습장 ---------------------------------
+--1
+SELECT EMPNO,
+    RPAD(SUBSTR(EMPNO,1,2),4,'*') AS MASKIN_EMPNO,
+    ENAME,
+    RPAD(SUBSTR(ENAME,1,1),LENGTH(ENAME ),'*') AS MASKIN_EMPNO
+FROM EMP;
+--2 
+SELECT EMPNO, ENAME,SAL,
+    TRUNC(SAL /21.5,2) AS DAY_PAY,
+    ROUND((SAL/21.5)/8,1) AS TIME_PAY
+FROM EMP;
+--3
+SELECT EMPNO,ENAME,HIREDATE,
+    TO_CHAR(NEXT_DAY(ADD_MONTHS(HIREDATE,3),'MON'),'YYYY/MM/DD') AS "R_JOB",
+    NVL(TO_CHAR(COMM), 'N/A') AS "COMM"
+FROM EMP;
 
-
-
+--4
+SELECT EMPNO,ENAME,MGR,
+    CASE
+        WHEN SUBSTR(MGR,1,2) = '75' THEN '5555'
+        WHEN SUBSTR(MGR,1,2) = '75' THEN '5555'
+        WHEN SUBSTR(MGR,1,2) = '75' THEN '5555'
+        WHEN SUBSTR(MGR,1,2) = '75' THEN '5555'
+        WHEN MGR IS NULL THEN '0000'
+        ELSE TO_CHAR(MGR /*NCHAR NCHAR*/)
+    END AS CHG_MGR
+FROM EMP;
+    
