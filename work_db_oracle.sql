@@ -686,4 +686,145 @@ SELECT EMPNO,ENAME,MGR,
         ELSE TO_CHAR(MGR /*NCHAR NCHAR*/)
     END AS CHG_MGR
 FROM EMP;
-    
+
+
+-----------------------------------------------------
+--GROUP BY : 여러 데이터에서 의미 있는  하나의 결과를 특정 열값별로 묶어서 출력할떄 사용
+SELECT ROUND(AVG(SAL),2) AS  "사원전체 평균"
+FROM EMP;
+
+
+-- 부서별 사원 평균
+SELECT DEPTNO,ROUND(AVG(SAL),2) AS  "부서별평균"
+FROM EMP
+GROUP BY DEPTNO
+ORDER BY DEPTNO;
+
+-- 집합 연산자를 사용하여 
+SELECT AVG(SAL) FROM EMP WHERE DEPTNO =10
+UNION ALL
+SELECT AVG(SAL) FROM EMP WHERE DEPTNO =20
+UNION ALL
+SELECT AVG(SAL) FROM EMP WHERE DEPTNO =30;
+
+-- 부서코드, 급여 합계 , 부서 평균 , 부서 코드 순 정렬 
+SELECT DEPTNO AS 부서코드,
+    SUM(SAL) AS 합계,
+    ROUND(AVG(SAL),2) AS 평균,
+    COUNT(*)                     /*부서별 인원수*/
+FROM EMP
+GROUP BY DEPTNO
+ORDER BY DEPTNO;
+
+-- HAVING 절 : GROUP BY 절이 존재하는 경우에만 사용
+-- GROUP BY 절을 통해 그룹화된 결과 값을 범위를 제한할 떄 사용
+-- 먼저 부서별, 직책별로 그룹화하여 평균을 구함
+-- 그다음 각 그룹별 급여 평균이 2000이 넘는 그룹을 출력 함 
+
+SELECT DEPTNO, JOB, ROUND (AVG(SAL), 2)
+FROM EMP
+GROUP BY DEPTNO, JOB
+    HAVING AVG(SAL) >= 2000
+ORDER BY DEPTNO, JOB;
+
+-- WHERE 절을 사용하는 경우
+-- 먼저 급여가 2000 이상인 사원들을 골라냄
+-- 조건에 맞는 사원 중에서 부서별, 직책별 급여의 평균을 구해서 출력 
+
+SELECT DEPTNO, JOB, ROUND (AVG(SAL), 2)
+FROM EMP
+WHERE SAL >=2000
+GROUP BY DEPTNO, JOB
+ORDER BY DEPTNO, JOB;
+
+--1.
+SELECT DEPTNO,JOB,
+ROUND(AVG(SAL),2)
+FROM EMP
+GROUP BY DEPTNO,JOB
+    HAVING AVG(SAL) >=500
+ORDER BY DEPTNO,JOB;
+
+--2.
+SELECT DEPTNO,TRUNC(AVG(SAL)),MAX(SAL),MIN(SAL),
+    COUNT(*) AS 사원수
+FROM EMP
+GROUP BY DEPTNO;
+ORDER BY DEPTNO;
+
+--3.
+SELECT JOB,COUNT(*)
+FROM EMP
+GROUP BY JOB
+    HAVING COUNT(*) >=3
+ORDER BY JOB;
+
+--4
+SELECT DEPTNO,EXTRACT(YEAR FROM HIREDATE),
+    COUNT(*)
+FROM EMP
+GROUP BY DEPTNO,EXTRACT(YEAR FROM HIREDATE)
+ORDER BY DEPTNO,EXTRACT(YEAR FROM HIREDATE);
+
+--5
+SELECT  NVL2(COMM,'0','X'),COUNT(*)
+FROM EMP
+GROUP BY  NVL2(COMM,'0','X')
+ORDER BY  NVL2(COMM,'0','X');
+
+--6
+SELECT EXTRACT(YEAR FROM HIREDATE),
+    COUNT(*), MAX(SAL),SUM(SAL),TRUNC(AVG(SAL))
+FROM EMP
+GROUP BY EXTRACT(YEAR FROM HIREDATE)
+ORDER BY EXTRACT(YEAR FROM HIREDATE);
+
+
+-- 그룹화와 관련된 여러 함수 : ROLLUP, CUBE ....
+SELECT EXTRACT(YEAR FROM HIREDATE),
+    COUNT(*), MAX(SAL),SUM(SAL),TRUNC(AVG(SAL))
+FROM EMP
+GROUP BY EXTRACT(YEAR FROM HIREDATE)
+ORDER BY EXTRACT(YEAR FROM HIREDATE);
+
+-- ROLLUP : 명시한 열을 소그룹 부터 대그룹의 순서로 각 그룹별로 결과를 
+-- 출력하고 마지막에 총 데이터 결과를 출력
+
+SELECT EXTRACT(YEAR FROM HIREDATE),
+    COUNT(*), MAX(SAL),SUM(SAL),TRUNC(AVG(SAL))
+FROM EMP
+GROUP BY EXTRACT(YEAR FROM HIREDATE);
+
+-- 조인 : 두 개 이상의 테이블에서 데이터를 가져와서 연결하는데 사용하는 SQL기능 
+-- RDMS에서는 테이블 설계시 무결성 원칙으로 인해 동일한 정보가 여러군대 존재하면 안되기 떄문에 
+-- 필연적으로 테이블을 관리 목적에 맞게 설계 함 .
+SELECT *
+FROM DEPT;
+
+-- 열 이름을 비교하는 조건식으로 조인하기 
+SELECT * 
+    FROM EMP, DEPT
+    WHERE EMP.DEPTNO = DEPT.DEPTNO  -- 조인의 기준 : 테이블.주소번호
+ORDER BY EMPNO;
+
+-- 테이블 별칭 사용하기
+SELECT * 
+FROM EMP E, DEPT D 
+    WHERE E.DEPTNO = D.DEPTNO 
+ORDER BY EMPNO;
+
+-- 조인 종류 : 두 개 이상의 테이블을 하나의 테이블처럼 가로로 늘려서 출력하기 위해 사용
+-- 조인은 대상 데이터를 어떻게 연결하는냐에 따라 등가, 비등가 자체, 외부 조인으로 구분
+-- 등가 조인 : 테이블을 연결한 후 출력 행을 각 테이블의 특정 열에 일치한 데이터를 기준으로 선정하는 방법
+-- 등가 조인에서는 안시(ANSI) 조인과 오라클 조인이 있음 
+
+
+
+
+
+
+
+
+
+
+
