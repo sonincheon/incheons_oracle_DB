@@ -812,19 +812,229 @@ SELECT *
 FROM EMP E, DEPT D 
     WHERE E.DEPTNO = D.DEPTNO 
 ORDER BY EMPNO;
-
+-------------------------------------------------------------------------------------------------------------------------
 -- 조인 종류 : 두 개 이상의 테이블을 하나의 테이블처럼 가로로 늘려서 출력하기 위해 사용
 -- 조인은 대상 데이터를 어떻게 연결하는냐에 따라 등가, 비등가 자체, 외부 조인으로 구분
 -- 등가 조인 : 테이블을 연결한 후 출력 행을 각 테이블의 특정 열에 일치한 데이터를 기준으로 선정하는 방법
 -- 등가 조인에서는 안시(ANSI) 조인과 오라클 조인이 있음 
+SELECT EMPNO,ENAME, D.DEPTNO, DNAME, LOC
+    FROM EMP E, DEPT D 
+    WHERE E.DEPTNO = D.DEPTNO
+    AND E.DEPTNO = 10
+    ORDER BY D.DEPTNO ;
 
 
+-- 테이블 JOIN 테이블  ON 주소번호 
+SELECT EMPNO,ENAME, D.DEPTNO, DNAME, LOC
+    FROM EMP E JOIN DEPT D
+    ON E.DEPTNO = D.DEPTNO
+    WHERE E.EMPNO = 10
+    ORDER BY D.DEPTNO;
 
 
+SELECT EMPNO,ENAME, D.DEPTNO, SAL, DNAME, LOC
+    FROM EMP E JOIN DEPT D
+    ON E.DEPTNO = D.DEPTNO
+    WHERE SAL <= 3000
+    ORDER BY D.DEPTNO;
+
+--1
+SELECT SAL, EMPNO, D.DEPTNO
+    FROM EMP E JOIN DEPT D
+    ON E.DEPTNO = D.DEPTNO  -- 동등 조인, 이너 조인, 이퀄조인 
+    WHERE SAL <=2500 
+    AND EMPNO <=9999
+    ORDER BY D.DEPTNO;
 
 
+-- ANSI 조인
+SELECT EMPNO,ENAME, D.DEPTNO, DNAME, LOC
+    FROM EMP E JOIN DEPT D 
+    ON E.DEPTNO = D.DEPTNO
+    WHERE SAL<=2500
+    AND EMPNO <=9999
+    ORDER BY EMPNO;
+
+-- 비등가 조인 : 동일 , 컬럼(열 , 레코드) 없이 다른 조건을 사용하여 조인 할 떄 사용 ( 일반적인경우 아님 )
+SELECT *
+FROM EMP;
+
+SELECT *
+FROM SALGRADE;
+
+SELECT E.ENAME, E.SAL, S.GRADE
+FROM EMP E , SALGRADE S --  두개의 테이블 연결 
+WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL; -- 비등가 조인 
+
+-- ANSI 조인으로 변경
+SELECT E.ENAME, E.SAL, S.GRADE
+    FROM EMP E JOIN SALGRADE S
+    ON E.SAL BETWEEN S.LOSAL AND S.HISAL;
+
+--자체 조인 : 셀프 조인이라고 함 , 같은 테이블을 두번 사용하여 자체 조인 
+-- EMP 테이블에서 직속상관의 사원번호는 MGR에 있음
+-- MGR 을 이요해서 상관의 이름을 알아내기 위해서 사용할수 있음
+SELECT E1.EMPNO, E1.ENAME, E1.MGR,
+    E2.EMPNO AS MGR_EMPNO,
+    E2.ENAME AS MGR_ENAME
+FROM EMP E1,EMP E2
+WHERE E1.MGR = E2.EMPNO;
+
+--외부 조인 : 동등 조인의 경우 한쪽의 컬럼이 없으면 해당 행으로 표시 되지 않음
+-- 외부 조인은 내부 조인과 다르게 다른 한쪽에 값이 없어도 출력됨 
+-- 외부 조인은 동등 조인 조건을 만족하지 못해 누락되는 행을 출력하기 위해서 사용
+
+INSERT INTO EMP(EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+    VALUES (9000, '유나', 'SALESMAN',7698,SYSDATE,2000,1000,NULL);
+
+-- 왼쪽 외부 조인 사용하기
+SELECT ENAME, E.DEPTNO,DNAME
+FROM EMP E, DEPT D 
+WHERE E.DEPTNO=D.DEPTNO(+)
+ORDER BY E.DEPTNO;
+
+SELECT * FROM DEPT;
+
+-- 오른쪽 외부 조인 사용하기
+SELECT E.ENAME, E.DEPTNO,D.DNAME
+FROM EMP E, DEPT D
+WHERE E.DEPTNO(+)=D.DEPTNO
+ORDER BY D.DEPTNO;
+------------------------------------------------------------------------------------------------------
+-- SQL -99 표준문법으로 배우는 ANSI 조인
+-- NATURAL JOIN : 등가조인 대신 사용, 자동으로 같은 열을 찾아서 조인 해줌 
+SELECT EMPNO, ENAME, DNAME
+FROM EMP NATURAL JOIN DEPT;
+
+-- JOIN ~ USING  : 등가 조인 대신 사용 , USING 키워드에 조인 기준 열을 명시하여 사용 
+SELECT EMPNO, ENAME, JOB, MGR, HIREDATE,DEPTNO
+FROM EMP E JOIN DEPT D
+USING (DEPTNO); -- 여기에 조인할 주소 입력 
+
+--JOIN ~ON : ANSI 등가 조인 
+SELECT EMPNO, ENAME, JOB, MGR, HIREDATE,E.DEPTNO
+FROM EMP E JOIN DEPT D
+ON E.DEPTNO=D.DEPTNO;
+
+-- ANSI LEFT OUTER JOIN 
+SELECT ENAME, E.DEPTNO,DNAME
+FROM EMP E LEFT OUTER JOIN DEPT D 
+ON E.DEPTNO=D.DEPTNO
+ORDER BY E.DEPTNO;
+
+--ANSI RIGHT OUTER JOIN
+SELECT ENAME, E.DEPTNO,DNAME
+FROM EMP E RIGHT OUTER JOIN DEPT D 
+ON E.DEPTNO=D.DEPTNO
+ORDER BY E.DEPTNO;
+
+--1
+SELECT D.DEPTNO,DNAME,EMPNO,ENAME,SAL
+FROM EMP E JOIN DEPT D
+ON E.DEPTNO = D.DEPTNO
+WHERE SAL <=2000
+ORDER BY D.DEPTNO;
+
+--2 
+SELECT D.DEPTNO,
+    TRUNC(AVG(SAL)),TRUNC(MAX(SAL)),TRUNC(MIN(SAL)),
+    COUNT(*)
+FROM DEPT D JOIN EMP E
+ON E.DEPTNO = D.DEPTNO
+GROUP BY D.DEPTNO
+ORDER BY D.DEPTNO;
+
+--3
+SELECT E.DEPTNO,DNAME,EMPNO,ENAME,JOB,SAL
+FROM EMP E RIGHT OUTER JOIN DEPT D
+ON E.DEPTNO = D.DEPTNO
+ORDER BY E.DEPTNO,E.ENAME;
+
+-------------------------------------------------------------------------
+-- 서브 쿼리 : 어떤 상황이나 조건에 따라 변할 수 있는 데이터 값을 비교하기 위해
+-- SQL문 안에 작성하는 작은 SELECT 문을 의미 합니다 .
+-- 킹 이라는 이름을 가진 사원의 부서 이름을 찾기위한 쿼리문 
+SELECT DNAME FROM DEPT 
+WHERE DEPTNO = (SELECT DEPTNO FROM EMP
+                                WHERE ENAME ='KING');
+
+--사원 JONES 의 급여보다 높은 급여를 받는 사원 정보 출력 하기
+SELECT EMPNO,ENAME,SAL 
+FROM EMP
+WHERE SAL>(SELECT SAL FROM EMP
+                        WHERE ENAME='JONES');
+
+-- EMP 테이블의 사원 정보 중에서 사원이름이 'ALLEN'인 사원의 추가 수당 보다 많은 추가 수당을 받는 사원출력
+SELECT *
+FROM EMP
+WHERE  COMM > (SELECT COMM FROM EMP WHERE ENAME='ALLEN');
 
 
+SELECT *
+FROM EMP
+WHERE HIREDATE<(SELECT HIREDATE FROM EMP WHERE ENAME ='JAMES');
+
+SELECT EMPNO, ENAME, JOB, SAL, DEPTNO,DNAME,LOC
+FROM EMP E JOIN DEPT D
+USING(DEPTNO)
+WHERE DEPTNO = 20
+AND SAL>(SELECT AVG(SAL) FROM EMP );
+
+-- 다중행 서브쿼리 : 서브쿼리의 실행 결과가 여러개로 나오는 서브쿼리
+-- IN : 메인 쿼리의 데이터가 서브쿼리의 겨과중 하나라도 일치하면 TRUE
+-- 각부서별 최대 금여와 동일한 금여를 받는 사원 정보를 출력 
+SELECT * 
+FROM EMP
+WHERE SAL IN(SELECT MAX (SAL)FROM EMP GROUP BY DEPTNO);   --같은조건 반환 
+
+-- ANY : 메인 쿼리의 비교조건이 서브 퀄리의 여러 검색결과중 하나라도 만족하면 반환 
+
+SELECT * 
+FROM EMP
+WHERE SAL = ANY(SELECT MAX (SAL) -- 한가지 조건 성립 하면 반환 
+                                FROM EMP 
+                                GROUP BY DEPTNO);
+
+SELECT EMPNO, ENAME, SAL
+FROM EMP
+WHERE SAL > ANY (SELECT SAL      
+                                FROM EMP 
+                                WHERE JOB = 'SALESMAN');
+
+-- ALL :  모든조건을 만족하는 경우에 성립 
+SELECT *
+FROM EMP
+WHERE SAL  < ALL(SELECT SAL  -- 모든 조건을 만족하면 반환
+                                FROM EMP 
+                                WHERE DEPTNO = 30); 
+
+SELECT EMPNO, ENAME, SAL 
+FROM EMP
+WHERE SAL > ALL (SELECT SAL 
+                                FROM EMP 
+                                WHERE JOB = 'MANAGER');
+
+--EXISTS 연산자 :  서브쿼리의 결과 값이 하나 이상 존재하면 조건식이 모두 TRUE,  존재하지않으면 모두 FALSE
+SELECT *
+FROM EMP
+WHERE EXISTS (SELECT DNAME 
+                        FROM DEPT  
+                        WHERE DEPTNO = 10);
+
+-- 다중 열 서브 쿼리 : 서브 쿼리의 결과가 두개이상의 컬럼으로 반환되어 메인 쿼리에 전달하는 쿼리
+SELECT EMPNO,ENAME,SAL,DEPTNO
+FROM EMP
+WHERE (DEPTNO, SAL) IN (SELECT DEPTNO,SAL  
+                                            FROM EMP 
+                                            WHERE DEPTNO = 30 AND SAL > 1500);
+
+
+-- GROUP BY 절이 포함된 다중열 서브 쿼리
+SELECT *
+FROM EMP
+WHERE (DEPTNO, SAL)IN(SELECT DEPTNO,MAX(SAL) 
+                                        FROM EMP
+                                        GROUP BY DEPTNO);
 
 
 
